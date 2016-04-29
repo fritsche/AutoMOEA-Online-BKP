@@ -1,0 +1,62 @@
+
+########################################################################################################
+# ALGORITHM 2: MOEAHyperHeuristic
+# 
+# 1. Os <heuristic_selection> podem ser substítuidos por diferentes métodos de seleção, 
+#    tais como AdaptiveChoiceFuntion, Roulette ou Random.
+#
+# 2. Podem ser utilizados diferentes <heuristic_selection> para diferentes componentes.
+#
+########################################################################################################
+
+selection_preferences_heuristic_selection = <heuristic_selection> # AdaptiveChoiceFuntion, Roulette, Random...
+replacement_preferences_heuristic_selection = <heuristic_selection> # AdaptiveChoiceFuntion, Roulette, Random...
+archivement_preferences_heuristic_selection = <heuristic_selection> # AdaptiveChoiceFuntion, Roulette, Random...
+
+# *_list_of_low_level_heuristics is a list of int, each value represents a low_level_heuristic (or component)
+# initialize_selection, initializes the probabilities (or anything) of the heuristic_selection
+
+selection_preferences_heuristic_selection = initialize_selection (selection_preferences_list_of_low_level_heuristics) 
+replacement_preferences_heuristic_selection = initialize_selection (replacement_preferences_list_of_low_level_heuristics) 
+archivement_preferences_heuristic_selection = initialize_selection (archivement_preferences_list_of_low_level_heuristics) 
+
+population = <initialization> () # aleatória
+repository = <initialize_repository> (population) # recebe as soluções não dominadas da população
+
+while (iteration < max_iteration)
+begin
+
+	# heuristic selection
+	selection_preferences = selection_preferences_heuristic_selection.getHeuristic ()
+	replacement_preferences = replacement_preferences_heuristic_selection.getHeuristic ()
+	archivement_preferences = archivement_preferences_heuristic_selection.getHeuristic ()
+
+	# build, run and get output
+	moea = build_moea (selection_preferences, replacement_preferences, archivement_preferences)
+	moea.run (n, population, repository) # n is the number of iterations
+	population_aux = moea.get_population()
+	repository_aux = moea.get_repository()
+	offspring_information = moea.get_offspring_information()
+	population_information = moea.get_population_information()
+	repository_information = moea.get_repository_information()
+
+	# evaluate low-level heuristic
+	selection_preferences_reward = compute_reward (offspring_information)
+	replacement_preferences_reward = compute_reward (population_information)
+	archivement_preferences_reward = compute_reward (repository_information)
+	selection_preferences_heuristic_selection.evaluateHeursitic(selection_preferences_reward)
+	replacement_preferences_heuristic_selection.evaluateHeursitic(replacement_preferences_reward)
+	archivement_preferences_heuristic_selection.evaluateHeursitic(archivement_preferences_reward)
+
+	# move acceptance
+	if ( move_acceptance( population_aux, population ) ) # se população nova melhor que antiga
+	then
+		population = population_aux
+	end
+	if ( move_acceptance( repository_aux, repository ) ) # se arquivo novo melhor que antigo
+	then
+		repository = repository_aux
+	end
+
+	iteration = iteration + n
+end

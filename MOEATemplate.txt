@@ -1,0 +1,46 @@
+
+########################################################################################################
+# ALGORITHM 1: MOEATemplate
+# 
+# 1. os componentes 'trocáveis' são representados entre <> 
+#
+# 2. a principio alguns serão fixos mas podem ser implementados como 'trocáveis' apenas para seguir 
+# 	 com a ideia de generalizar ao máximo e poder trocar qualquer parte do MOEATemplate futuramente.
+#    Mesmo que a principio alguns serão sempre instanciados da mesma forma, para o template é indiferente.
+# 
+# 3. na primeira etapa apenas serão selecionados os componentes <*_preference>
+########################################################################################################
+
+# a população e repositorio iniciais devem ser recebidos por parâmetro para que seja possível reutilizar de um moea no proximo
+population = arg_population
+repository = arg_repository
+
+while ( ! <stop_criteria> ) # por enquanto número de iterações
+begin
+	
+	parents = <selection> (population U repository, <selection_preference>) # por enquanto a seleção é um torneio octal
+	offspring = <variation> (parents) # por enquanto fixo algum par cruzamento + mutação
+	fitness_evaluation (offspring)
+	
+	offspring_information [iteration] = <compute_offspring_information> (offspring) # dominance rate, PBI, ASF...
+
+	population = population U offspring
+	population = <replacement> (population, <replacement_preference>)
+	
+	population_information [iteration] = <compute_population_information> (population) # R2, HV ...
+
+	if (repository != NULL ) # se o MOEA usa arquivo externo
+	then
+		repository = repository U population
+		repository = remove_dominated_solutions (repository)
+
+		if ( |repository| > repository_limit_size ) # se o arquivo está excedido
+		then
+			repository = archivement (repository, <archivement_preference>)
+			repository_information [iteration] = <compute_repository_information> (repository) # R2, HV ...
+		end
+	end
+
+end
+
+return (population, repository, offspring_information, population_information, repository_information)
